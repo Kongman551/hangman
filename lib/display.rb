@@ -3,7 +3,7 @@ require 'colorize'
 
 module Display
   def welcome
-    puts "Welcome to Hangman!\n\n".red.underline
+    puts "Welcome to Hangman!\n".red.underline
     puts "(1) Start Game\n(2) Load Game".bold
 	end
 	
@@ -18,14 +18,22 @@ module Display
 	def show_round
 		puts "Round: #{round}\n\n".cyan.italic
 	end
-
+=begin 
 	def show_board
 		#puts "Word: #{word}"
 		#puts "Available: #{available_let}"
 		
-		show_answer
-		puts "Wrong Letters: #{wrong_let.join}".italic
+		
+		
 		puts "\n~~~~~~~~~~~~~~~~~~~~~~\n\n".light_white
+	end
+=end
+	def show_wrong_let
+		puts "Wrong Letters: #{wrong_let.join}\n\n".light_red.italic
+	end
+
+	def show_seperator
+		puts "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n".light_white
 	end
 
 	def disp_guess
@@ -56,6 +64,30 @@ module Display
 
 	def disp_play_again
 		puts "Would you like to play again? Y/N"
+	end
+
+	def loads_screen
+		puts "SAVED FILES\n".red.underline
+		save_files = Dir.children("save-files")
+		save_files.each_with_index do |file, idx|
+			puts "#{idx + 1} - #{file.delete_suffix(".json")}\n\n"
+		end
+	end
+
+	def which_load_game
+		p "Load a saved game by the corresponding number: "
+	end
+
+	def ask_filename
+		puts "Enter a file name to save: "
+	end
+
+	def exit_message
+		abort("Thanks for playing!")
+	end
+
+	def cls
+		system 'clear'
 	end
 
 	def hangman_board

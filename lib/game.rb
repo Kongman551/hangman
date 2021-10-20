@@ -1,3 +1,5 @@
+#save-load branch
+
 require_relative 'word'
 require_relative 'display'
 require 'json'
@@ -5,7 +7,7 @@ require 'json'
 class Game
   include Display
 
-  attr_reader :available_let, :answer, :wrong_let, :word, :round, :input
+  attr_reader :available_let, :answer, :wrong_let, :word, :round, :end, :split_let, :win, :input
 
 	def initialize
 		menu
@@ -13,14 +15,19 @@ class Game
 
 	def menu
 		mode = nil
-		until mode == '1'
+		until mode == '1' || mode == '2'
 			cls
 			welcome
 			mode = gets.chomp
 		end
 		cls
-		create
-		play
+		if mode == '2'
+			load_game
+			play
+		else
+			create
+			play
+		end
 	end
 
 	def create
@@ -35,10 +42,21 @@ class Game
 		instructions
 	end
 
+	def load(w, a_let, r, end1, s_let, ans, w_let, win)
+		@word = w
+		@available_let = a_let
+		@round = r
+		@end = end1
+		@split_let = s_let
+		@answer = ans
+		@wrong_let = w_let
+		@win = win
+		hangman_board
+	end
+
   	def play
 		until @end == true
-      		check_word
-			show_board
+			check_word
 			check_win	
 		end
 		if !@win 
@@ -60,8 +78,6 @@ class Game
 	end
 
   	def check_word
-		@input = ''
-		show_round
     	get_let_input
 		@available_let.delete(@input)
 		disp_guess
@@ -74,20 +90,25 @@ class Game
 			@wrong_let.push(@input)
 			disp_incorrect
 		end
-		hangman_board
 		@round += 1
 	end
 	
 	def get_let_input
-		until @available_let.include?(@input)
-			 if @round == 1
-				hangman_board
-				show_answer
-			 end
-      		ask_letter
+		@input = ''
+		until @available_let.include?(@input) || @input == "SAVE"
+			show_round
+			hangman_board
+			show_seperator
+			show_answer
+			show_wrong_let
+			ask_letter
       		@input = gets.chomp.upcase
 		end
+		
 		cls
+		if @input == "SAVE"
+			save_game
+		end
 	end
 
 	def play_again
@@ -100,11 +121,65 @@ class Game
 			cls
 			menu
 		else
-			abort("Thanks for playing!")
+			exit_message
 		end
 	end
 	
-	def cls
-		system 'clear'
+	def get_save_filename
+		ask_filename
+		@filename = gets.chomp
+	end
+
+	def save_game
+		get_save_filename
+		Dir.mkdir('save-files') unless Dir.exist?('save-files')
+		File.open("save-files/#{@filename}.json", "w") do |file|
+			file.puts(to_json)
+		end
+		exit_message
+	end
+
+	def to_json
+		JSON.dump({
+					"word": @word,
+					"available_let": @available_let,
+					"round": @round,
+					"end": @end,
+					"split_let": @split_let,			
+					"answer": @answer,
+					"wrong_let": @wrong_let,
+					"win": @win
+				  })
+	end
+
+	def from_json(save_game)
+		data = JSON.parse(File.read(save_game))
+		load(
+			data["word"],
+			data["available_let"],
+			data["round"],
+			data["end"],
+			data["split_let"],
+			data["answer"],
+			data["wrong_let"],
+			data["win"]
+		)
+	end
+
+	def load_game
+		loads_screen
+		save_files = Dir.children("save-files")
+		f_select = ''
+		f_num = 0
+		until f_num <= save_files.size && f_num != 0
+			which_load_game
+			f_num = gets.chomp.to_i
+		end
+		f_select = save_files[f_num - 1]
+		
+		File.open("save-files/#{f_select}", 'r') do |file|
+			from_json(file)
+		end
+		cls
 	end
 end
