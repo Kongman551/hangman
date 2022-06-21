@@ -14,3 +14,5 @@ On each turn guess a letter.
 ### Gems Used
   - [Colorize](https://github.com/fazibear/colorize) - Change color of game board and text
   - [JSON](https://github.com/flori/json) - Used for storing save game data
+
+#### [Live Preview](https://replit.com/@Kongman551/hangman-1)
